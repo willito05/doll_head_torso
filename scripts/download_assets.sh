@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ========= CONFIG À REMPLIR =========
 # Lien DIRECT vers ton best.pt (GitHub Release recommandé)
-WEIGHTS_URL="https://github.com/<user>/<repo>/releases/download/v0.1.0/best.pt"
+WEIGHTS_URL="https://github.com/willito05/doll_head_torso/releases/download/v0.1.0/best.pt"
 
 # (Optionnel) Lien vers un ZIP du dataset (ou laisse vide)
 DATASET_ZIP_URL=""
