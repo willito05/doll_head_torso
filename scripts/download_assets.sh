@@ -6,9 +6,11 @@ set -euo pipefail
 WEIGHTS_URL="https://github.com/willito05/doll_head_torso/releases/download/v0.1.0/best.pt"
 
 # (Optionnel) Lien vers un ZIP du dataset (ou laisse vide)
-DATASET_ZIP_URL=""
+DATASET_ZIP_URL="https://github.com/willito05/doll_head_torso/releases/download/v0.1.1/Dataset_full_v01.zip"
 # Nom du dossier dataset après extraction (adapter si besoin)
-DATASET_DIR_NAME="doll_2parts"
+DATASET_DIR_NAME="Dataset"
+
+UNZIP_TARGET="."
 # ====================================
 
 mkdir -p weights datasets
