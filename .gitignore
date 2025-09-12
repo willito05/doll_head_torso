@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+# Gros artefacts à NE PAS pousser
+Dataset/
+datasets/
+runs/
+weights/
+*.pt
+*.onnx
+*.bag
+*.zip
+
+# Editeurs
+.vscode/
+.idea/
