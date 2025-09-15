@@ -211,28 +211,10 @@ Publishes /yolo_seg/annotated (Image) for rqt.
 </launch>
 ```
 5) Dataflow (Mermaid)
-```mermaid
-flowchart LR
-  subgraph CAM[Intel RealSense D456]
-    C["/camera/color/image_raw"]
-    D["/camera/aligned_depth_to_color/image_raw"]
-    I["/camera/color/camera_info"]
-  end
 
-  subgraph DS[doll_state_node.py]
-    note["YOLOv8 seg (agnostic NMS)<br/>ht vs union(head,torso)<br/>geometry checks + hysteresis<br/>2D/3D coordinates"]
-  end
-
-  C -->|sensor_msgs/Image| DS
-  D -->|sensor_msgs/Image| DS
-  I -->|sensor_msgs/CameraInfo| DS
-
-  DS -->|sensor_msgs/Image| DBG["/doll_state/debug_image"]
-  DS -->|std_msgs/String| ST["/doll_state/state"]
-  DS -->|std_msgs/String (JSON)| PJ["/doll_state/parts_json"]
-  DS -->|geometry_msgs/PoseStamped| HP["/doll_state/head_pose"]
-  DS -->|geometry_msgs/PoseStamped| TP["/doll_state/torso_pose"]
-  DS -->|geometry_msgs/PoseStamped| HTP["/doll_state/ht_pose"]
+<p align="center">
+  <img src="docs/img/graph.png" width="1000" alt="Doll Head–Torso dataflow">
+</p>
 
 6) Nodes & Topics
 6.1 nodes/yolo_seg_node.py
