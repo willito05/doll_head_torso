@@ -32,7 +32,9 @@ rqt_image_view /doll_state/debug_image
 rostopic echo /doll_state/state
 ```
 Ensure your launch sets:
-<param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>.
+```bash
+<param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>
+```
 
 ## 1) Tested Environment
 
