@@ -30,9 +30,9 @@ roslaunch doll_head_torso doll_state_cord.launch
 # visualize
 rqt_image_view /doll_state/debug_image
 rostopic echo /doll_state/state
-
-    Ensure your launch sets:
-    <param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>.
+```
+Ensure your launch sets:
+<param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>.
 
 1) Tested Environment
 
@@ -44,7 +44,7 @@ rostopic echo /doll_state/state
 
 2) Fresh Ubuntu Install — All Dependencies
 2.1 Install ROS Noetic + catkin
-
+```bash
 # apt sources
 sudo apt update
 sudo apt install -y curl gnupg lsb-release
@@ -69,9 +69,10 @@ mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws && catkin_make
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
+```
 
 2.2 ROS packages used by this repo
-
+```bash
 sudo apt install -y \
   ros-noetic-realsense2-camera \
   ros-noetic-cv-bridge \
@@ -82,20 +83,20 @@ sudo apt install -y \
   ros-noetic-rqt-image-view \
   ros-noetic-rqt-plot \
   jq unzip
-
+```
 2.3 Python libraries
-
+```bash
 # (optional) use a venv
 # python3 -m venv ~/venv-doll && source ~/venv-doll/bin/activate
 
 python3 -m pip install --upgrade pip
 pip install ultralytics opencv-python numpy PyYAML
 # Install torch matching your CUDA/OS from https://pytorch.org/get-started/locally/
-
-    Depth alignment is required: RealSense depth must be aligned to color for correct 3D reprojection.
+```
+Depth alignment is required: RealSense depth must be aligned to color for correct 3D reprojection.
 
 3) Repository Layout
-
+```bash
 doll_head_torso/
 ├─ launch/
 │  ├─ camera.launch           # wraps realsense2_camera/rs_camera.launch
@@ -111,12 +112,12 @@ doll_head_torso/
 ├─ CMakeLists.txt
 ├─ package.xml
 └─ .gitignore
-
+```
 4) Launch Files
 4.1 launch/camera.launch
 
 Wrapper around realsense2_camera/rs_camera.launch. Key args:
-
+```bash
 <launch>
   <arg name="enable_color" value="true"/>
   <arg name="enable_depth" value="true"/>
@@ -142,12 +143,12 @@ Wrapper around realsense2_camera/rs_camera.launch. Key args:
     <arg name="depth_fps" value="$(arg depth_fps)"/>
   </include>
 </launch>
-
+```
 Publishes: /camera/color/image_raw, /camera/aligned_depth_to_color/image_raw, /camera/color/camera_info.
 4.2 launch/yolo_seg.launch
 
 Camera + yolo_seg_node.py (visual testing). Example:
-
+```bash
 <launch>
   <include file="$(find doll_head_torso)/launch/camera.launch">
     <arg name="enable_color" value="true"/>
@@ -165,10 +166,10 @@ Camera + yolo_seg_node.py (visual testing). Example:
     <param name="process_every_n" value="1"/>
   </node>
 </launch>
-
+```
 Publishes /yolo_seg/annotated (Image) for rqt.
 4.3 launch/doll_state_cord.launch (recommended runtime)
-
+```bash
 <launch>
   <include file="$(find doll_head_torso)/launch/camera.launch">
     <arg name="enable_color" value="true"/>
@@ -208,9 +209,9 @@ Publishes /yolo_seg/annotated (Image) for rqt.
     <param name="publish_debug" value="true"/>
   </node>
 </launch>
-
+```
 5) Dataflow (Mermaid)
-
+```bash
 flowchart LR
   subgraph CAM[Intel RealSense D456]
     C["/camera/color/image_raw"]
@@ -232,7 +233,7 @@ flowchart LR
   DS -->|geometry_msgs/PoseStamped| HP["/doll_state/head_pose"]
   DS -->|geometry_msgs/PoseStamped| TP["/doll_state/torso_pose"]
   DS -->|geometry_msgs/PoseStamped| HTP["/doll_state/ht_pose"]
-
+```
 6) Nodes & Topics
 6.1 nodes/yolo_seg_node.py
 
@@ -244,26 +245,26 @@ flowchart LR
 
 6.2 nodes/doll_state_node.py (main)
 
-    Sub:
+Sub:
 
-        /camera/color/image_raw
+    /camera/color/image_raw
 
-        /camera/aligned_depth_to_color/image_raw (if use_depth=true)
+    /camera/aligned_depth_to_color/image_raw (if use_depth=true)
 
-        /camera/color/camera_info
+    /camera/color/camera_info
 
-    Pub:
+Pub:
 
-        ~debug_image → /doll_state/debug_image (Image)
+    ~debug_image → /doll_state/debug_image (Image)
 
-        ~state → /doll_state/state (String: assembled | disassembled | unknown)
+    ~state → /doll_state/state (String: assembled | disassembled | unknown)
 
-        ~parts_json → /doll_state/parts_json (String JSON per frame)
+    ~parts_json → /doll_state/parts_json (String JSON per frame)
 
-        ~head_pose, ~torso_pose, ~ht_pose → PoseStamped (XYZ in camera frame)
+    ~head_pose, ~torso_pose, ~ht_pose → PoseStamped (XYZ in camera frame)
 
 parts_json schema (example):
-
+```bash
 {
   "frame_id": "camera_color_optical_frame",
   "parts": [
@@ -277,7 +278,7 @@ parts_json schema (example):
     }
   ]
 }
-
+```
 7) Decision Logic (summary)
 
     Prefer class ht (assembled) if confidence ≥ min_conf_ht and mask overlaps union(head, torso) with IoU ≥ ht_union_iou_min.
@@ -313,21 +314,21 @@ Debug
 9) How to Inspect Coordinates (no robot required)
 
 3D XYZ (meters, camera frame)
-
+```bash
 rostopic echo /doll_state/head_pose/pose/position
 rostopic echo /doll_state/torso_pose/pose/position
 rostopic echo /doll_state/ht_pose/pose/position
-
+```
 2D + details (JSON per frame)
-
+```bash
 rostopic echo /doll_state/parts_json
 # Pretty-print one sample (requires jq)
 rostopic echo -n1 /doll_state/parts_json | sed -n 's/^data: //p' | jq
-
+```
 Visual overlay
-
+```bash
 rqt_image_view /doll_state/debug_image
-
+```
     PoseStamped.header.frame_id is the camera frame (e.g., camera_color_optical_frame).
     Use tf2 to transform to your robot base/world if needed.
 
@@ -341,7 +342,7 @@ rqt_image_view /doll_state/debug_image
     If you want the script to fetch it, uncomment and fill DATASET_ZIP_URL, DATASET_DIR_NAME, UNZIP_TARGET in the script, then re-run it.
 
 Download script (exact content used in this repo):
-
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -400,19 +401,19 @@ else
   echo "[INFO] No local dataset (optional)"
 fi
 echo "Done."
-
+```
 11) Training Notes (optional)
 
 Dataset YAML (example)
-
+```bash
 # datasets/doll_2parts/data.yaml
 path: datasets/doll_2parts
 train: images/train
 val: images/val
 names: [head, torso, ht]
-
+```
 Train with Ultralytics (example)
-
+```bash
 # Example command (adjust paths/model as needed)
 yolo segment train \
   data=datasets/doll_2parts/data.yaml \
@@ -422,7 +423,7 @@ yolo segment train \
 
 # Export best weights to repo
 mkdir -p weights && cp runs/segment/train/weights/best.pt weights/best.pt
-
+```
 Best practices
 
     Balance classes across head, torso, ht.
@@ -436,10 +437,10 @@ Best practices
 12) Troubleshooting
 
 Grey image in rqt_image_view
-
+```bash
 rqt_image_view /doll_state/debug_image
 rostopic hz /doll_state/debug_image
-
+```
 No 3D coordinates
 
     Enable and align depth: enable_depth=true, align_depth=true (in camera.launch).
@@ -463,7 +464,7 @@ Performance
 13) Git & Releases (reference)
 
 .gitignore (used here)
-
+```bash
 __pycache__/
 *.pyc
 Dataset/
@@ -476,9 +477,9 @@ weights/
 *.zip
 .vscode/
 .idea/
-
+```
 Minimal CMakeLists.txt
-
+```bash
 cmake_minimum_required(VERSION 3.0.2)
 project(doll_head_torso)
 find_package(catkin REQUIRED COMPONENTS rospy sensor_msgs std_msgs geometry_msgs cv_bridge image_transport)
@@ -488,9 +489,9 @@ catkin_install_python(PROGRAMS
   nodes/doll_state_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
+```
 Minimal package.xml
-
+```bash
 <?xml version="1.0"?>
 <package format="2">
   <name>doll_head_torso</name>
@@ -509,7 +510,7 @@ Minimal package.xml
   <exec_depend>image_transport</exec_depend>
   <exec_depend>realsense2_camera</exec_depend>
 </package>
-
+```
 Release flow (weights + dataset)
 
     Draft a GitHub Release (e.g., v0.1.0) → upload best.pt.
