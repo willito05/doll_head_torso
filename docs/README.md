@@ -13,27 +13,32 @@ Detect whether a doll is **assembled** (head + torso) or **disassembled**, and p
 ## 0) Quickstart (TL;DR)
 
 ```bash
-# clone
+# 0) Prerequisites
+# - ROS Noetic (Ubuntu 20.04) or your current ROS version
+# - A catkin workspace created: ~/catkin_ws with src/ devel/ build/ folders
+# - Camera driver installed (e.g. realsense2_camera if you use an Intel RealSense)
+
+# 1) Get the package directly inside the workspace
+cd ~/catkin_ws/src
 git clone git@github.com:willito05/doll_head_torso.git
 cd doll_head_torso
+chmod +x scripts/download_assets.sh
+./scripts/download_assets.sh     # downloads at least weights/best.pt
 
-# download weights (dataset is optional and OFF by default)
-./scripts/download_assets.sh
+# 2) Build the workspace
+cd ~/catkin_ws
+catkin_make
+source devel/setup.bash          # run this in every new terminal session
 
-# build inside catkin workspace
-cd ~/catkin_ws/src && ln -s $(pwd) .
-cd .. && catkin_make && source devel/setup.bash
-
-# run (use your launch name)
+# 3) Plug in and launch the camera (e.g. RealSense)
+# (make sure realsense2_camera is installed + udev rules configured)
+# You can also launch the camera separately, but the project launch may start everything for you.
 roslaunch doll_head_torso doll_state_cord.launch
 
-# visualize
-rqt_image_view /doll_state/debug_image
-rostopic echo /doll_state/state
-```
-Ensure your launch sets:
-```bash
-<param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>
+# 4) Visualization
+rqt_image_view /doll_state/debug_image        # model overlay output
+rostopic echo /doll_state/state               # published state/label
+rqt_graph                                      # overview of nodes and topics (optional)
 ```
 
 ## 1) Tested Environment
