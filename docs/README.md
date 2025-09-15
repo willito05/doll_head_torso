@@ -213,7 +213,7 @@ Publishes /yolo_seg/annotated (Image) for rqt.
 5) Dataflow (Mermaid)
 
 <p align="center">
-  <img src="docs/img/graph.png" width="1000" alt="Doll Head–Torso dataflow">
+  <img src="img/graph.png" width="1000" alt="Doll Head–Torso dataflow">
 </p>
 
 6) Nodes & Topics
