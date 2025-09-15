@@ -34,7 +34,7 @@ rostopic echo /doll_state/state
 Ensure your launch sets:
 <param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>.
 
-1) Tested Environment
+## 1) Tested Environment
 
     Ubuntu 20.04 + ROS Noetic (Python 3)
 
@@ -42,8 +42,8 @@ Ensure your launch sets:
 
     GPU optional (CUDA). CPU works (slower).
 
-2) Fresh Ubuntu Install — All Dependencies
-2.1 Install ROS Noetic + catkin
+## 2) Fresh Ubuntu Install — All Dependencies
+### 2.1 Install ROS Noetic + catkin
 ```bash
 # apt sources
 sudo apt update
@@ -71,7 +71,7 @@ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-2.2 ROS packages used by this repo
+### 2.2 ROS packages used by this repo
 ```bash
 sudo apt install -y \
   ros-noetic-realsense2-camera \
@@ -84,7 +84,7 @@ sudo apt install -y \
   ros-noetic-rqt-plot \
   jq unzip
 ```
-2.3 Python libraries
+### 2.3 Python libraries
 ```bash
 # (optional) use a venv
 # python3 -m venv ~/venv-doll && source ~/venv-doll/bin/activate
@@ -95,7 +95,7 @@ pip install ultralytics opencv-python numpy PyYAML
 ```
 Depth alignment is required: RealSense depth must be aligned to color for correct 3D reprojection.
 
-3) Repository Layout
+## 3) Repository Layout
 ```bash
 doll_head_torso/
 ├─ launch/
@@ -113,8 +113,8 @@ doll_head_torso/
 ├─ package.xml
 └─ .gitignore
 ```
-4) Launch Files
-4.1 launch/camera.launch
+## 4) Launch Files
+### 4.1 launch/camera.launch
 
 Wrapper around realsense2_camera/rs_camera.launch. Key args:
 ```bash
@@ -145,7 +145,7 @@ Wrapper around realsense2_camera/rs_camera.launch. Key args:
 </launch>
 ```
 Publishes: /camera/color/image_raw, /camera/aligned_depth_to_color/image_raw, /camera/color/camera_info.
-4.2 launch/yolo_seg.launch
+### 4.2 launch/yolo_seg.launch
 
 Camera + yolo_seg_node.py (visual testing). Example:
 ```bash
@@ -168,7 +168,7 @@ Camera + yolo_seg_node.py (visual testing). Example:
 </launch>
 ```
 Publishes /yolo_seg/annotated (Image) for rqt.
-4.3 launch/doll_state_cord.launch (recommended runtime)
+### 4.3 launch/doll_state_cord.launch (recommended runtime)
 ```bash
 <launch>
   <include file="$(find doll_head_torso)/launch/camera.launch">
@@ -210,14 +210,14 @@ Publishes /yolo_seg/annotated (Image) for rqt.
   </node>
 </launch>
 ```
-5) Dataflow (Mermaid)
+## 5) Dataflow (Mermaid)
 
 <p align="center">
   <img src="img/graph.png" width="1000" alt="Doll Head–Torso dataflow">
 </p>
 
-6) Nodes & Topics
-6.1 nodes/yolo_seg_node.py
+## 6) Nodes & Topics
+### 6.1 nodes/yolo_seg_node.py
 
     Sub: /camera/color/image_raw
 
@@ -225,7 +225,7 @@ Publishes /yolo_seg/annotated (Image) for rqt.
 
     Params: model_path, conf, iou, imgsz, device, process_every_n
 
-6.2 nodes/doll_state_node.py (main)
+### 6.2 nodes/doll_state_node.py (main)
 
 Sub:
 
@@ -261,7 +261,7 @@ parts_json schema (example):
   ]
 }
 ```
-7) Decision Logic (summary)
+## 7) Decision Logic (summary)
 
     Prefer class ht (assembled) if confidence ≥ min_conf_ht and mask overlaps union(head, torso) with IoU ≥ ht_union_iou_min.
 
@@ -275,7 +275,7 @@ parts_json schema (example):
 
     Inference uses agnostic NMS; conf/iou thresholds are tunable.
 
-8) Parameters (suggested defaults)
+## 8) Parameters (suggested defaults)
 
 Inference
 ~model_path (str), ~conf=0.33, ~iou=0.58, ~imgsz=640, ~device=0 (or 'cpu'), ~process_every_n=1
@@ -293,7 +293,7 @@ Hysteresis
 
 Debug
 ~publish_debug=true
-9) How to Inspect Coordinates (no robot required)
+## 9) How to Inspect Coordinates (no robot required)
 
 3D XYZ (meters, camera frame)
 ```bash
@@ -314,7 +314,7 @@ rqt_image_view /doll_state/debug_image
     PoseStamped.header.frame_id is the camera frame (e.g., camera_color_optical_frame).
     Use tf2 to transform to your robot base/world if needed.
 
-10) Dataset & Weights
+## 10) Dataset & Weights
 
     Weights (weights/best.pt) are hosted as a GitHub Release asset and downloaded by scripts/download_assets.sh.
     By default, the script downloads only the model.
@@ -384,7 +384,7 @@ else
 fi
 echo "Done."
 ```
-11) Training Notes (optional)
+## 11) Training Notes (optional)
 
 Dataset YAML (example)
 ```bash
@@ -416,7 +416,7 @@ Best practices
 
     Moderate augmentations (±20° rotation, light blur, brightness/contrast).
 
-12) Troubleshooting
+## 12) Troubleshooting
 
 Grey image in rqt_image_view
 ```bash
@@ -443,7 +443,7 @@ Performance
 
     Prefer GPU (device=0) with a matching Torch/CUDA build.
 
-13) Git & Releases (reference)
+## 13) Git & Releases (reference)
 
 .gitignore (used here)
 ```bash
@@ -505,7 +505,7 @@ Release flow (weights + dataset)
 
     Never share private SSH keys. If using SSH, add only the public key to GitHub (ssh-ed25519 AAAA...).
 
-14) Changelog (brief)
+## 14) Changelog (brief)
 
     v1: yolo_seg_node.py (annotation only)
 
