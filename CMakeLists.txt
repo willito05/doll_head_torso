@@ -112,6 +112,12 @@ catkin_package(
   CATKIN_DEPENDS rospy sensor_msgs cv_bridge image_transport realsense2_camera geometry_msgs
 )
 
+catkin_install_python(PROGRAMS
+  scripts/doll_state_node_cord.py
+  scripts/yolo_seg_node.py   # si tu l’utilises aussi
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 ###########
 ## Build ##
 ###########
