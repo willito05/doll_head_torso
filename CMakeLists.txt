@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   realsense2_camera
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   #  INCLUDE_DIRS include
   #  LIBRARIES doll_head_torso
-  CATKIN_DEPENDS rospy sensor_msgs cv_bridge image_transport realsense2_camera
+  CATKIN_DEPENDS rospy sensor_msgs cv_bridge image_transport realsense2_camera geometry_msgs
 )
 
 ###########
