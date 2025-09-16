@@ -109,10 +109,9 @@ doll_head_torso/
 │  ├─ camera.launch           # wraps realsense2_camera/rs_camera.launch
 │  ├─ yolo_seg.launch         # camera + yolo_seg_node.py (visual debug)
 │  └─ doll_state_cord.launch  # camera + doll_state_node.py (state + coords)
-├─ nodes/
+├─ scripts/
 │  ├─ yolo_seg_node.py        # segmentation + annotated image
 │  └─ doll_state_node_cord.py      # robust state + coordinates (2D/3D)
-├─ scripts/
 │  └─ download_assets.sh      # downloads weights; dataset optional (off by default)
 ├─ weights/                   # best.pt (ignored by git; created by script)
 ├─ docs/                      # additional docs (this file)
