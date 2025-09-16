@@ -1,0 +1,31 @@
+<launch>
+  <!-- ZED0 -->
+  <group ns="zed0">
+    <!-- Lancer ici la caméra ZED0 (wrapper Stereolabs) -->
+    <!-- <include file="$(find zed_wrapper_pkg)/launch/zed_camera.launch">
+         <arg name="camera_name" value="zed0"/>
+         <arg name="serial_number" value="XXXXXX"/>
+         ...
+       </include> -->
+
+    <node pkg="doll_head_torso" type="doll_state_node_cord.py" name="doll_state" output="screen">
+      <param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>
+      <param name="image_topic" value="/zed0/zed_node/rgb/image_rect_color"/>
+      <param name="depth_topic" value="/zed0/zed_node/depth/depth_registered"/>
+      <param name="camera_info_topic" value="/zed0/zed_node/rgb/camera_info"/>
+      <param name="use_depth" value="true"/>
+      <!-- Inference tuning -->
+      <param name="conf" value="0.33"/>
+      <param name="iou" value="0.58"/>
+      <param name="imgsz" value="640"/>
+      <param name="device" value="0"/>
+      <param name="process_every_n" value="1"/>
+      <param name="publish_debug" value="true"/>
+    </node>
+  </group>
+
+  <!-- Duplique pour zed1, zed2, zed3 -->
+  <group ns="zed1"> ... (mêmes params avec /zed1/...) </group>
+  <group ns="zed2"> ... </group>
+  <group ns="zed3"> ... </group>
+</launch>
