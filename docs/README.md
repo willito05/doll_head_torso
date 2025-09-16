@@ -111,7 +111,7 @@ doll_head_torso/
 │  └─ doll_state_cord.launch  # camera + doll_state_node.py (state + coords)
 ├─ nodes/
 │  ├─ yolo_seg_node.py        # segmentation + annotated image
-│  └─ doll_state_node.py      # robust state + coordinates (2D/3D)
+│  └─ doll_state_node_cord.py      # robust state + coordinates (2D/3D)
 ├─ scripts/
 │  └─ download_assets.sh      # downloads weights; dataset optional (off by default)
 ├─ weights/                   # best.pt (ignored by git; created by script)
@@ -184,7 +184,7 @@ Publishes /yolo_seg/annotated (Image) for rqt.
     <arg name="align_depth" value="true"/>
   </include>
 
-  <node pkg="doll_head_torso" type="doll_state_node.py" name="doll_state" output="screen">
+  <node pkg="doll_head_torso" type="doll_state_node_cord.py" name="doll_state" output="screen">
     <param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>
     <param name="image_topic" value="/camera/color/image_raw"/>
     <param name="depth_topic" value="/camera/aligned_depth_to_color/image_raw"/>
@@ -232,7 +232,7 @@ Publishes /yolo_seg/annotated (Image) for rqt.
 
     Params: model_path, conf, iou, imgsz, device, process_every_n
 
-### 6.2 nodes/doll_state_node.py (main)
+### 6.2 nodes/doll_state_node_cord.py (main)
 
 Sub:
 
@@ -474,8 +474,8 @@ project(doll_head_torso)
 find_package(catkin REQUIRED COMPONENTS rospy sensor_msgs std_msgs geometry_msgs cv_bridge image_transport)
 catkin_package()
 catkin_install_python(PROGRAMS
-  nodes/yolo_seg_node.py
-  nodes/doll_state_node.py
+  scripts/yolo_seg_node.py
+  scripts/doll_state_node_cord.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 ```
@@ -516,7 +516,7 @@ Release flow (weights + dataset)
 
     v1: yolo_seg_node.py (annotation only)
 
-    v2: doll_state_node.py (state + debug overlay)
+    v2: doll_state_node_cord.py (state + debug overlay)
 
     v3: Robustness: agnostic NMS, ht vs union(head∪torso), geometry checks, hysteresis
 
