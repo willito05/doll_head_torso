@@ -1,0 +1,63 @@
+<launch>
+  <arg name="serial_no" default=""/>
+  <arg name="fps" default="30"/>
+
+  <!-- RealSense avec profondeur alignée -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="serial_no" value="$(arg serial_no)"/>
+    <arg name="enable_color" value="true"/>
+    <arg name="enable_depth" value="true"/>
+    <arg name="align_depth" value="true"/>
+
+    <!-- Réglages vidéo -->
+    <arg name="color_width"  value="640"/>
+    <arg name="color_height" value="480"/>
+    <arg name="color_fps"    value="$(arg fps)"/>
+    <arg name="depth_width"  value="640"/>
+    <arg name="depth_height" value="480"/>
+    <arg name="depth_fps"    value="$(arg fps)"/>
+
+    <!-- Option: si présent, monte la distance de clip (ou supprime la ligne) -->
+    <arg name="clip_distance" value="2.5"/>
+    <!-- Option: si ta version les supporte, tu peux garder des filtres depth -->
+    <!-- <arg name="filters" value="spatial,temporal,hole_filling"/> -->
+  </include>
+
+  <!-- 1) Filtre fond par profondeur -->
+  <node pkg="doll_head_torso" type="depth_bg_filter_node.py" name="bg_filter" output="screen">
+    <param name="color_topic" value="/camera/color/image_raw"/>
+    <param name="depth_topic" value="/camera/aligned_depth_to_color/image_raw"/>
+    <param name="camera_info_topic" value="/camera/color/camera_info"/>
+
+    <!-- Étends la bande utile (distance objet) -->
+    <param name="z_min" value="0.15"/>
+    <param name="z_max" value="1.20"/>
+    <param name="morph_kernel" value="5"/>
+    <param name="blur" value="0"/>
+  </node>
+
+  <!-- 2) Détection + décision d'état -->
+  <node pkg="doll_head_torso" type="doll_state_node_cord.py" name="doll_state_node_cord" output="screen">
+    <param name="model_path" value="$(find doll_head_torso)/weights/best.pt"/>
+    <param name="device" value="0"/>
+    <param name="imgsz" value="640"/>
+    <param name="conf" value="0.33"/>
+    <param name="iou" value="0.58"/>
+
+    <!-- On consomme l'image filtrée -->
+    <param name="image_topic" value="/bg_filter/fg_only"/>
+
+    <!-- Profondeur et intrinsics -->
+    <param name="depth_topic" value="/camera/aligned_depth_to_color/image_raw"/>
+    <param name="camera_info_topic" value="/camera/color/camera_info"/>
+    <param name="use_depth" value="true"/>
+
+    <!-- Preset "torse-friendly" -->
+    <param name="min_conf_ht" value="0.93"/>
+    <param name="ht_union_iou_min" value="0.80"/>
+    <param name="mask_threshold" value="0.55"/>
+    <param name="overlap_thresh" value="0.34"/>
+    <param name="center_dist_factor" value="0.48"/>
+    <param name="min_frames_to_assembled" value="6"/>
+  </node>
+</launch>

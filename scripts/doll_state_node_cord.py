@@ -84,25 +84,25 @@ class DollStateNode:
 
         self.conf = float(rospy.get_param("~conf", 0.33))
         self.iou  = float(rospy.get_param("~iou", 0.58))
-        self.device = rospy.get_param("~device", "0")
+        self.device = rospy.get_param("~device", "0") # "0" GPU id, "cpu" otherwise
         self.imgsz = int(rospy.get_param("~imgsz", 640))
         self.process_every_n = int(rospy.get_param("~process_every_n", 1))
 
         # Seg/masks + logique
-        self.mask_threshold = float(rospy.get_param("~mask_threshold", 0.5))
-        self.min_conf_ht = float(rospy.get_param("~min_conf_ht", 0.5))
-        self.ht_union_iou_min = float(rospy.get_param("~ht_union_iou_min", 0.5))
+        self.mask_threshold = float(rospy.get_param("~mask_threshold", 0.6)) #0.5
+        self.min_conf_ht = float(rospy.get_param("~min_conf_ht", 0.8)) #0.5
+        self.ht_union_iou_min = float(rospy.get_param("~ht_union_iou_min", 0.75)) #0.5
 
-        self.overlap_thresh = float(rospy.get_param("~overlap_thresh", 0.22))
-        self.center_dist_factor = float(rospy.get_param("~center_dist_factor", 0.55))
-        self.min_vertical_margin = float(rospy.get_param("~min_vertical_margin", 0.05))  # % hauteur image
-        self.max_head_to_torso_area_ratio = float(rospy.get_param("~max_head_to_torso_area_ratio", 0.8))
+        self.overlap_thresh = float(rospy.get_param("~overlap_thresh", 0.4)) #0.22
+        self.center_dist_factor = float(rospy.get_param("~center_dist_factor", 0.45)) #0.55
+        self.min_vertical_margin = float(rospy.get_param("~min_vertical_margin", 0.10))  #0.05 % hauteur image
+        self.max_head_to_torso_area_ratio = float(rospy.get_param("~max_head_to_torso_area_ratio", 0.7)) #0.8
 
         # Hystérésis
         self.stable_state = "unknown"
         self.assembled_streak = 0
         self.disassembled_streak = 0
-        self.min_frames_to_assembled = int(rospy.get_param("~min_frames_to_assembled", 5))
+        self.min_frames_to_assembled = int(rospy.get_param("~min_frames_to_assembled", 7)) #5
         self.min_frames_to_disassembled = int(rospy.get_param("~min_frames_to_disassembled", 3))
         self.unknown_decay = int(rospy.get_param("~unknown_decay", 1))
 
@@ -174,7 +174,7 @@ class DollStateNode:
                 iou=self.iou,
                 device=self.device,
                 verbose=False,
-                agnostic_nms=True
+                agnostic_nms=False #True
             )[0]
         except Exception as e:
             rospy.logwarn(f"[doll_state_node] Erreur inference: {e}")
@@ -226,6 +226,25 @@ class DollStateNode:
             if name == "head": head_idxs.append(i)
             elif name == "torso": torso_idxs.append(i)
             elif name == "ht": ht_idxs.append(i)
+
+        # --- Heuristique anti-confusion : si 0 torso et >=2 head, reclasser
+        if not torso_idxs and len(head_idxs) >= 2 and masks is not None:
+            h_candidates = []
+            for hi in head_idxs:
+                if hi < masks.shape[0]:
+                    m = masks[hi]
+                    c = centroid_from_mask(m)   # (u,v)
+                    a = area_from_mask(m)
+                    if c is not None:
+                        # on retient: index, coordonnée verticale (v), aire
+                        h_candidates.append((hi, c[1], a))
+            if len(h_candidates) >= 2:
+                # Choisit comme 'torso' la "tête" la plus BASSE, en départageant par la plus GRANDE aire
+                torso_like = max(h_candidates, key=lambda t: (t[1], t[2]))[0]
+                # met à jour les listes
+                torso_idxs = [torso_like]
+                head_idxs  = [i for (i,_,_) in h_candidates if i != torso_like]
+
 
         # 1) ht validé vs union
         if ht_idxs:
